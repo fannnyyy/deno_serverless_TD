@@ -9,26 +9,16 @@ function handlePreFlightRequest(): Response {
 }
 
 async function handler(_req: Request): Promise<Response> {
-  if (_req.method === "OPTIONS") {
-    return handlePreFlightRequest(); 
-  }
-
-  const url = new URL(_req.url);
-  const word = url.searchParams.get("value"); // récupère le paramètre "value"
-
-  if (!word) {
-    return new Response(JSON.stringify({ error: "Missing ?value parameter" }), {
-      status: 400,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
-    });
+  if (_req.method == "OPTIONS") {
+    handlePreFlightRequest();
   }
 
   const headers = new Headers();
   headers.append("Content-Type", "application/json");
 
+  const url = new URL(_req.url);
+  const word = url.searchParams.get("value");
+  
   const similarityRequestBody = JSON.stringify({
     word1: "centrale",
     word2: word,
@@ -36,26 +26,29 @@ async function handler(_req: Request): Promise<Response> {
 
   const requestOptions = {
     method: "POST",
-    headers,
+    headers: headers,
     body: similarityRequestBody,
+    redirect: "follow",
   };
 
   try {
     const response = await fetch("https://word2vec.nicolasfley.fr/similarity", requestOptions);
 
     if (!response.ok) {
+      console.error(`Error: ${response.statusText}`);
       return new Response(`Error: ${response.statusText}`, {
-        status: response.status,
+        status: 200,
         headers: {
           "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers": "content-type",
         },
       });
     }
 
     const result = await response.json();
-    console.log("Similarity result:", result);
 
+    console.log(result);
     return new Response(JSON.stringify(result), {
       status: 200,
       headers: {
@@ -66,13 +59,7 @@ async function handler(_req: Request): Promise<Response> {
     });
   } catch (error) {
     console.error("Fetch error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
-    });
+    return new Response(`Error: ${error.message}`, { status: 500 });
   }
 }
 
