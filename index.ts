@@ -21,7 +21,7 @@ async function handler(_req: Request): Promise<Response> {
   
   const similarityRequestBody = JSON.stringify({
     word1: "centrale",
-    word2: word,
+    word2: word
   });
 
   const requestOptions = {
