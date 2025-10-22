@@ -16,9 +16,12 @@ async function handler(_req: Request): Promise<Response> {
   const headers = new Headers();
   headers.append("Content-Type", "application/json");
 
+  const url = new URL(_req.url);
+  const word = url.searchParams.get("value");
+  
   const similarityRequestBody = JSON.stringify({
     word1: "centrale",
-    word2: "supelec",
+    word2: word,
   });
 
   const requestOptions = {
